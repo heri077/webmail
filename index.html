@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX TempMail - OTP Ready</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        :root {
+            --bg-primary: #1A202C;
+            --bg-secondary: #2D3748;
+            --text-primary: #E2E8F0;
+            --text-secondary: #A0AEC0;
+            --accent-blue: #3b82f6;
+            --accent-blue-darker: #2563eb;
+            --accent-teal: #06b6d4;
+            --accent-purple: #8b5cf6;
+            --border-color: #4A5568;
+            --card-gradient: linear-gradient(to bottom, #1e293b, #172034);
+            --highlight-bg: rgba(59, 130, 246, 0.15);
+            --gradient-primary: linear-gradient(to bottom, #2D3748, #2A3441);
+            --gradient-card: linear-gradient(to bottom, #2D3748, #2A3441);
+            --gradient-nav: linear-gradient(to right, #1A202C, #1E2433);
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: #E2E8F0;
+        }
+        
+        .email-card { 
+            background-image: var(--gradient-card);
+            transition: all 0.3s ease;
+        }
+        
+        .email-card:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-color: rgba(66, 153, 225, 0.3);
+        }
+        
+        .email-card.otp-email {
+            border-left: 4px solid var(--accent-purple);
+        }
+        
+        .email-card.otp-email:hover {
+            border-color: rgba(139, 92, 246, 0.6);
+        }
+        
+        .modal {
+            transition: opacity 0.2s ease;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 3rem;
+            height: 1.5rem;
+            background: #374151;
+            border-radius: 9999px;
+            transition: background 0.3s;
+            margin-left: 1.5rem;
+        }
+
+        .toggle-switch:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 4px;
+            width: 1.25rem;
+            height: 1.25rem;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            transform: translateY(-50%);
+        }
+
+        .peer:checked + .toggle-switch {
+            background: #0091ed;
+        }
+
+        .peer:checked + .toggle-switch:after {
+            transform: translate(100%, -50%);
+        }
+
+        .peer:focus + .toggle-switch {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.5);
+        }
+
+        .baru-button {
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
+            transition: all 0.3s ease;
+        }
+        
+        .baru-button:hover {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+        }
+
+        .otp-button {
+            background: linear-gradient(90deg, var(--accent-purple), #a855f7);
+            transition: all 0.3s ease;
+        }
+        
+        .otp-button:hover {
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.5);
+        }
+
+        #email-search {
+            width: calc(100% - 24px);
+            max-width: 780px;
+        }
+
+        .otp-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .otp-highlight {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1));
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body id="app" class="flex flex-col">
+    <nav class="bg-gray-900 border-b border-gray-700">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 gap-4">
+                <div class="flex items-center min-w-0">
+                    <h1 class="text-xl sm:text-2xl font-bold truncate mr-4">
+                        <!-- Text akan diisi oleh JavaScript -->
+                    </h1>
+                </div>
+                <div class="flex-shrink-0 flex gap-2">
+                    <button onclick="showOTPGenerator()" 
+                            class="otp-button text-white px-4 py-2 rounded-md text-sm font-medium transition-all">
+                        🔐 Generate OTP
+                    </button>
+                    <button onclick="showLoginModal()" 
+                            class="baru-button text-white px-4 py-2 rounded-md text-sm font-medium transition-all">
+                        Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div style="width: 100%; background: linear-gradient(to right, rgba(80, 85, 90, 0.85), rgba(85, 90, 85, 0.95), rgba(80, 85, 90, 0.85)); padding: 12px 0;">
+        <div style="max-width: 800px; margin: 0 auto; padding: 0 12px; text-align: left; font-size: 1rem; font-weight: 400; color: #ffffff; line-height: 1.5;">
+            Set up your domain mail <span style="color: #6fb3ff; font-weight: 700;">effortlessly</span> with<br>
+            <span style="color: #52a2ff; font-weight: 700;">OTP support</span>, <span style="color: #a855f7; font-weight: 700;">real-time codes</span>, and <span style="color: #6fb3ff; font-weight: 700;">secure</span> mailbox access.
+        </div>
+    </div>
+
+    <div class="flex-1">
+        <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6">
+            <div class="">
+                <!-- Search Container with Toggle -->
+                <div class="flex flex-col gap-4 items-center mb-3">
+                    <input type="email" 
+                           id="email-search"
+                           placeholder="user@ttoko-home-ai.fun"
+                           class="w-full -mr-64 -ml-64 px-4 py-2 bg-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="flex items-center">
+                        <div class="flex items-center gap-4">
+                            <button onclick="searchEmails()"
+                                    id="search-button"
+                                    class="baru-button text-white px-4 py-2 rounded-md text-sm font-medium transition-all">
+                                Submit
+                            </button>
+                        </div>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" 
+                                   id="auto-refresh-toggle"
+                                   class="sr-only peer"
+                                   checked>
+                            <div class="toggle-switch"></div>
+                            <span class="ml-3 text-sm font-medium text-gray-300">Auto Refresh</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Progress Indicator -->
+                <div id="refresh-indicator" class="hidden w-full mt-4">
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 bg-gray-700 rounded-full h-2 overflow-hidden">
+                            <div id="progress-bar" class="bg-blue-500 h-full w-0 transition-all duration-100"></div>
+                        </div>
+                        <span id="refresh-countdown" class="text-sm text-gray-400 w-12">7s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="hidden mb-4">
+                <div class="flex justify-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+            </div>
+            
+            <div id="empty-state" class="max-w-4xl mx-auto">
+            </div>
+
+            <div id="email-list" class="space-y-4 mt-4">
+                <!-- Email cards will be inserted here -->
+            </div>
+
+            <!-- Pin Modal -->
+            <div id="pin-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                    <h3 class="text-lg font-medium text-white mb-4">Enter PIN</h3>
+                    <input type="password" 
+                           id="pin-input"
+                           placeholder="Enter PIN"
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="closePinModal()"
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            Cancel
+                        </button>
+                        <button onclick="submitPin()"
+                                class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTP Generator Modal -->
+            <div id="otp-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                    <h3 class="text-lg font-medium text-white mb-4">🔐 Generate OTP Email</h3>
+                    <form id="otp-form" class="space-y-4">
+                        <input type="email" 
+                               id="otp-email"
+                               placeholder="Enter email address"
+                               required
+                               class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <select id="otp-type" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="verification">Email Verification</option>
+                            <option value="login">Login Verification</option>
+                            <option value="password_reset">Password Reset</option>
+                        </select>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeOTPModal()"
+                                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                    class="otp-button text-white px-4 py-2 rounded-md text-sm font-medium">
+                                Generate OTP
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div id="otp-result" class="mt-4 p-4 bg-gray-700 rounded-lg hidden">
+                        <p class="text-sm text-green-400 mb-2">OTP Email Generated Successfully!</p>
+                        <div class="otp-highlight">
+                            <p class="text-sm text-gray-300 mb-1">Your OTP Code:</p>
+                            <p class="otp-code text-center" id="generated-otp"></p>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Check your inbox for the complete email.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Modal -->
+            <div id="login-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                    <h3 class="text-lg font-medium text-white mb-4">Login</h3>
+                    <input type="password" 
+                           id="owner-pin"
+                           placeholder="Enter owner PIN"
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="closeLoginModal()"
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            Cancel
+                        </button>
+                        <button onclick="submitOwnerLogin()"
+                                class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Features Section -->
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid md:grid-cols-1 gap-2 max-w-6xl">
+                <div class="min-w-[250px] flex-1 p-4 rounded-lg bg-gray-800">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-white">Easy Search</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm">Enter your email address to see all related emails and OTP codes.</p>
+                </div>
+
+                <div class="min-w-[250px] flex-1 p-4 rounded-lg bg-gray-800">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-white">OTP Support</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm">Generate and receive OTP codes for verification, login, and password reset.</p>
+                </div>
+
+                <div class="min-w-[250px] flex-1 p-4 rounded-lg bg-gray-800">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-white">Complete View</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm">View email content in HTML or text format with real-time updates.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div id="email-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 my-8">
+            <!-- Header -->
+            <div class="border-b border-gray-700 p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1 pr-4">
+                        <h3 id="email-subject" class="text-xl font-semibold text-white mb-2"></h3>
+                        <div class="space-y-1">
+                            <p class="text-sm text-gray-400">
+                                <span class="font-medium text-gray-300">From:</span>
+                                <span id="email-from"></span>
+                            </p>
+                            <p class="text-sm text-gray-400">
+                                <span class="font-medium text-gray-300">To:</span>
+                                <span id="email-to"></span>
+                            </p>
+                            <p class="text-sm text-gray-400">
+                                <span class="font-medium text-gray-300">Date:</span>
+                                <span id="email-date"></span>
+                            </p>
+                            <div id="email-type-badge" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <button id="email-modal-close" 
+                            onclick="closeEmailModal()"
+                            class="text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Email Body -->
+            <div id="email-body" class="p-6 overflow-y-auto" style="max-height: calc(100vh - 300px);">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-gradient-to-r from-gray-900 to-gray-800 border-t border-gray-700">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-400">© 2024-2025 RXmail Inc. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentEmail = '';
+        let pinRequired = false;
+        let selectedEmailId = null;
+        let refreshInterval;
+        let lastEmail = '';
+        let animationFrame;
+        const REFRESH_INTERVAL = 20000;
+
+        function showLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('owner-pin').value = '';
+        }
+
+        function showOTPGenerator() {
+            document.getElementById('otp-modal').classList.remove('hidden');
+        }
+
+        function closeOTPModal() {
+            document.getElementById('otp-modal').classList.add('hidden');
+            document.getElementById('otp-form').reset();
+            document.getElementById('otp-result').classList.add('hidden');
+        }
+
+        function showPinModal() {
+            document.getElementById('pin-modal').classList.remove('hidden');
+        }
+
+        function closePinModal() {
+            document.getElementById('pin-modal').classList.add('hidden');
+            document.getElementById('pin-input').value = '';
+        }
+
+        function showLoading() {
+            document.getElementById('loading-indicator').classList.remove('hidden');
+            document.getElementById('search-button').disabled = true;
+            document.getElementById('email-search').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-indicator').classList.add('hidden');
+            document.getElementById('search-button').disabled = false;
+            document.getElementById('email-search').disabled = false;
+        }
+
+        async function submitOwnerLogin() {
+            const pin = document.getElementById('owner-pin').value;
+            if (!pin) {
+                alert('Please enter PIN');
+                return;
+            }
+
+            try {
+                const response = await fetch('/owner/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ pin })
+                });
+
+                if (response.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    alert('Invalid PIN');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed');
+            }
+        }
+
+        // OTP Generation Form Handler
+        document.getElementById('otp-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('otp-email').value;
+            const type = document.getElementById('otp-type').value;
+            
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/generate-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, type })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('generated-otp').textContent = result.otp;
+                    document.getElementById('otp-result').classList.remove('hidden');
+                    
+                    // Auto-fill search field with the email
+                    document.getElementById('email-search').value = email;
+                    
+                    // Auto-close modal after 5 seconds
+                    setTimeout(() => {
+                        closeOTPModal();
+                        // Trigger search if email matches
+                        if (document.getElementById('email-search').value === email) {
+                            searchEmails();
+                        }
+                    }, 5000);
+                } else {
+                    const error = await response.json();
+                    alert('Failed to generate OTP: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('OTP generation error:', error);
+                alert('Network error: ' + error.message);
+            }
+        });
+
+        let isRefreshing = false;
+
+        async function searchEmails(isAutoRefresh = false) {
+            const emailInput = document.getElementById('email-search');
+            const email = emailInput.value.trim();
+            const emptyState = document.getElementById('empty-state');
+            
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+
+            if (isRefreshing) return;
+            isRefreshing = true;
+
+            emptyState.style.display = 'none';
+            showLoading();
+            
+            try {
+                // Cek session dulu
+                const hasValidSession = await checkSession(email);
+                
+                // Jika ada session valid, langsung fetch emails
+                if (hasValidSession) {
+                    await fetchAndDisplayEmails(email);
+                    if (!isAutoRefresh) {
+                        startAutoRefresh();
+                    }
+                    return;
+                }
+
+                // Jika tidak ada session, lanjut dengan flow normal
+                const checkResponse = await fetch('/api/check-pin-required', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email }),
+                    credentials: 'same-origin'
+                });
+
+                const data = await checkResponse.json();
+
+                if (data.expired) {
+                    document.documentElement.innerHTML = generateExpiredPage();
+                    stopAutoRefresh();
+                    return;
+                }
+
+                if (!checkResponse.ok) {
+                    throw new Error('Failed to check PIN requirement');
+                }
+
+                if (data.requiresPin) {
+                    pinRequired = true;
+                    currentEmail = email;
+                    hideLoading();
+                    showPinModal();
+                    return;
+                }
+
+                await fetchAndDisplayEmails(email);
+                if (!isAutoRefresh) {
+                    startAutoRefresh();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to check email access');
+            } finally {
+                isRefreshing = false;
+                hideLoading();
+            }
+        }
+
+        async function checkSession(email) {
+            try {
+                const response = await fetch(`/api/session/status?email=${encodeURIComponent(email)}`, {
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    return false;
+                }
+
+                const data = await response.json();
+                return data.isVerified;
+            } catch (error) {
+                console.error('Session check error:', error);
+                return false;
+            }
+        }
+
+        function generateExpiredPage() {
+            return `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Subscription Expired</title>
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <link rel="icon" type="image/png" href="/favicon.png">
+                </head>
+                <body class="bg-gray-900 min-h-screen flex items-center justify-center">
+                    <div class="text-center p-8">
+                        <div class="mb-8">
+                            <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h1 class="text-3xl font-bold text-white mb-4">Sepertinya langganan Anda sudah habis</h1>
+                        <p class="text-gray-400 text-lg mb-8">Yuk, perbarui sekarang!</p>
+                        <a href="/" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-medium">
+                            Kembali ke Beranda
+                        </a>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        async function submitPin() {
+            const pin = document.getElementById('pin-input').value;
+            
+            if (!pin) {
+                alert('Please enter PIN');
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/verify-pin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        email: currentEmail,
+                        pin 
+                    }),
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error('PIN verification failed');
+                }
+
+                // Tutup modal dan fetch emails
+                closePinModal();
+                await fetchAndDisplayEmails(currentEmail);
+                
+                // Jika berhasil dan auto refresh aktif, mulai refresh
+                const autoRefreshEnabled = document.getElementById('auto-refresh-toggle').checked;
+                if (autoRefreshEnabled) {
+                    startAutoRefresh();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Invalid PIN');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fetchAndDisplayEmails(email) {
+            showLoading();
+            try {
+                const response = await fetch('/api/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email }),
+                    credentials: 'same-origin'
+                });
+
+                const data = await response.json();
+                
+                // Handle kasus expired
+                if (data.expired) {
+                    document.documentElement.innerHTML = generateExpiredPage();
+                    stopAutoRefresh();
+                    return;
+                }
+
+                // Handle jika butuh PIN
+                if (response.status === 403 && data.requiresPin) {
+                    currentEmail = email;
+                    hideLoading();
+                    showPinModal();
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch emails');
+                }
+
+                if (data.length === 0) {
+                    document.getElementById('email-list').innerHTML = 
+                        '<p class="text-center text-gray-400">No emails found</p>';
+                    return;
+                }
+
+                displayEmails(data);
+            } catch (error) {
+                console.error('Error:', error);
+                if (error.message.includes('PIN')) {
+                    showPinModal();
+                } else {
+                    alert('Failed to fetch emails');
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function extractOTPFromContent(content) {
+            // Try to extract OTP code from email content
+            const otpRegex = /\b\d{4,8}\b/g;
+            const matches = content.match(otpRegex);
+            if (matches && matches.length > 0) {
+                // Return the longest number (most likely to be OTP)
+                return matches.reduce((a, b) => a.length > b.length ? a : b);
+            }
+            return null;
+        }
+
+        function createEmailCard(email) {
+            const card = document.createElement('div');
+            const isOTP = email.email_type === 'otp';
+            card.className = `email-card rounded-lg p-4 cursor-pointer bg-gradient-to-b from-gray-800 to-gray-700 ${isOTP ? 'otp-email' : ''}`;
+            card.dataset.emailId = email.id;
+            card.onclick = () => viewEmailContent(email.id);
+
+            // Safely format the date
+            let dateStr;
+            try {
+                dateStr = new Date(email.received_at).toLocaleString();
+            } catch (e) {
+                dateStr = email.received_at;
+            }
+
+            const typeIndicator = isOTP ? 
+                '<span class="bg-purple-600 text-xs px-2 py-1 rounded-full text-white mr-2">🔐 OTP</span>' : 
+                '';
+            
+            const pinIndicator = email.has_pin ? 
+                '<span class="bg-yellow-600 text-xs px-2 py-1 rounded-full text-white">🔐 PIN</span>' : 
+                '';
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div class="flex-1 mr-4">
+                        <h3 class="font-medium text-lg text-white break-words">${email.subject || '(No Subject)'}</h3>
+                        <p class="text-sm text-gray-400 break-words">From: ${email.from_address}</p>
+                        <p class="text-sm text-gray-400">Date: ${dateStr}</p>
+                        ${isOTP ? '<p class="text-xs text-purple-300 mt-1">✨ Contains verification code</p>' : ''}
+                    </div>
+                    <div class="text-right">
+                        <div class="flex flex-col items-end gap-1">
+                            ${typeIndicator}${pinIndicator}
+                            <span class="bg-blue-600 text-xs px-2 py-1 rounded-full text-white whitespace-nowrap">
+                                ${email.html_content ? 'HTML' : 'Text'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        async function viewEmailContent(id) {
+            try {
+                const response = await fetch(`/api/email/${id}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const email = await response.json();
+
+                // Hentikan auto refresh saat modal dibuka
+                stopAutoRefresh();
+
+                // Update konten modal
+                document.getElementById('email-subject').textContent = email.subject || '(No Subject)';
+                document.getElementById('email-from').textContent = email.from_address;
+                document.getElementById('email-to').textContent = email.to_address;
+                document.getElementById('email-date').textContent = new Date(email.received_at).toLocaleString();
+                
+                // Add email type badge
+                const typeBadge = document.getElementById('email-type-badge');
+                if (email.email_type === 'otp') {
+                    typeBadge.innerHTML = '<span class="bg-purple-600 text-xs px-3 py-1 rounded-full text-white">🔐 OTP Email</span>';
+                } else {
+                    typeBadge.innerHTML = '<span class="bg-blue-600 text-xs px-3 py-1 rounded-full text-white">📧 Regular Email</span>';
+                }
+                
+                // Update isi email
+                const emailBody = document.getElementById('email-body');
+                let content = email.html_content || email.text_content || '(No content)';
+                
+                // If it's an OTP email, try to highlight the OTP code
+                if (email.email_type === 'otp') {
+                    const otpCode = extractOTPFromContent(email.text_content || email.html_content || '');
+                    if (otpCode && email.html_content) {
+                        // Add OTP highlight to HTML content
+                        content = email.html_content;
+                    } else if (otpCode) {
+                        // Create formatted text with OTP highlight
+                        const textContent = email.text_content || '';
+                        const highlightedContent = textContent.replace(
+                            new RegExp(`\\b${otpCode}\\b`, 'g'),
+                            `<span class="otp-code">${otpCode}</span>`
+                        );
+                        content = `<div class="whitespace-pre-wrap text-sm">${highlightedContent}</div>`;
+                    }
+                }
+                
+                emailBody.innerHTML = email.html_content ? 
+                    content : 
+                    `<pre class="whitespace-pre-wrap text-sm">${content}</pre>`;
+
+                // Tampilkan modal
+                document.getElementById('email-modal').classList.remove('hidden');
+                
+                // Fokus ke tombol close untuk aksesibilitas
+                document.getElementById('email-modal-close').focus();
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to fetch email content');
+            }
+        }
+
+        function closeEmailModal() {
+            document.getElementById('email-modal').classList.add('hidden');
+            startAutoRefresh();
+        }
+
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('email-modal');
+            if (event.target === modal) {
+                closeEmailModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeEmailModal();
+                closeOTPModal();
+                closePinModal();
+                closeLoginModal();
+            }
+        });
+
+        // Handle enter key in search input
+        document.getElementById('email-search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchEmails();
+            }
+        });
+
+        // Handle enter key in pin input
+        document.getElementById('pin-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitPin();
+            }
+        });
+
+        // Handle enter key in owner pin input
+        document.getElementById('owner-pin').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitOwnerLogin();
+            }
+        });
+
+        window.onclick = function(event) {
+            const loginModal = document.getElementById('login-modal');
+            const pinModal = document.getElementById('pin-modal');
+            const otpModal = document.getElementById('otp-modal');
+            
+            if (event.target === loginModal) {
+                closeLoginModal();
+            }
+            if (event.target === pinModal) {
+                closePinModal();
+            }
+            if (event.target === otpModal) {
+                closeOTPModal();
+            }
+        };
+
+        async function loadSiteTitle() {
+            try {
+                const response = await fetch('/api/settings/title');
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.expired) {
+                        document.documentElement.innerHTML = generateExpiredPage();
+                        if (refreshInterval) {
+                            clearInterval(refreshInterval);
+                        }
+                        return;
+                    }
+
+                    const fullTitle = data.title || 'RX TempMail - OTP Ready';
+                    document.title = fullTitle;
+                    typeText(document.querySelector('h1'), "ıllı " + fullTitle);
+                } else {
+                    fallbackTitle();
+                }
+            } catch (error) {
+                console.error('Error loading site title:', error);
+                fallbackTitle();
+            }
+        }
+
+        function fallbackTitle() {
+            const defaultTitle = 'RX TempMail - OTP Ready';
+            document.title = defaultTitle;
+            typeText(document.querySelector('h1'), "ıllı " + defaultTitle);
+        }
+
+        function typeText(element, text, speed = 25) {
+            let i = 0;
+            element.textContent = "";
+            const typing = setInterval(() => {
+                element.textContent += text[i];
+                i++;
+                if (i >= text.length) {
+                    clearInterval(typing);
+                }
+            }, speed);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSiteTitle();
+            
+            // Add email input listener
+            document.getElementById('email-search').addEventListener('input', (e) => {
+                const newEmail = e.target.value.trim();
+                if (newEmail !== lastEmail) {
+                    stopAutoRefresh();
+                }
+            });
+
+            document.getElementById('auto-refresh-toggle').addEventListener('change', function(e) {
+                if (e.target.checked) {
+                    const emailInput = document.getElementById('email-search');
+                    const email = emailInput.value.trim();
+                    if (email) {
+                        startAutoRefresh();
+                    }
+                } else {
+                    stopAutoRefresh();
+                }
+            });
+        });
+
+        let openedEmailIds = new Set();
+
+        function displayEmails(emails) {
+            const emailList = document.getElementById('email-list');
+            const emptyState = document.getElementById('empty-state');
+            emailList.innerHTML = '';
+
+            // Sembunyikan empty state ketika ada email
+            emptyState.style.display = emails.length > 0 ? 'none' : 'block';
+
+            if (emails.length === 0) {
+                emailList.innerHTML = '<p class="text-center text-gray-400">No emails found</p>';
+                return;
+            }
+
+            // Sort emails: OTP emails first, then by date
+            emails.sort((a, b) => {
+                if (a.email_type === 'otp' && b.email_type !== 'otp') return -1;
+                if (a.email_type !== 'otp' && b.email_type === 'otp') return 1;
+                return new Date(b.received_at) - new Date(a.received_at);
+            });
+
+            emails.forEach(email => {
+                const card = createEmailCard(email);
+                emailList.appendChild(card);
+                
+                // Jika email ini sebelumnya terbuka, buka kembali
+                if (openedEmailIds.has(email.id)) {
+                    viewEmailContent(email.id, true);
+                }
+            });
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            
+            const emailInput = document.getElementById('email-search');
+            const autoRefreshEnabled = document.getElementById('auto-refresh-toggle').checked;
+            
+            lastEmail = emailInput.value.trim();
+            
+            if (!lastEmail || !autoRefreshEnabled) return;
+
+            document.getElementById('refresh-indicator').classList.remove('hidden');
+            
+            let startTime;
+            let animationFrame;
+            
+            function updateProgress(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = (timestamp - startTime) / REFRESH_INTERVAL * 100;
+                
+                if (progress <= 100) {
+                    document.getElementById('progress-bar').style.width = `${progress}%`;
+                    const remainingSeconds = Math.ceil((REFRESH_INTERVAL - (timestamp - startTime)) / 1000);
+                    document.getElementById('refresh-countdown').textContent = `${remainingSeconds}s`;
+                    
+                    animationFrame = requestAnimationFrame(updateProgress);
+                }
+            }
+
+            refreshInterval = setInterval(() => {
+                startTime = null;
+                if (emailInput.value.trim() === lastEmail) {
+                    searchEmails(true);
+                } else {
+                    stopAutoRefresh();
+                }
+            }, REFRESH_INTERVAL);
+
+            requestAnimationFrame(updateProgress);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+                document.getElementById('refresh-indicator').classList.add('hidden');
+                document.getElementById('progress-bar').style.width = '0%';
+                cancelAnimationFrame(animationFrame);
+            }
+        }
+
+        function setRealHeight() {
+            const app = document.getElementById('app');
+            if (app) {
+                app.style.minHeight = `${window.innerHeight}px`;
+            }
+        }
+
+        setRealHeight();
+        window.addEventListener('resize', setRealHeight);
+    </script>
+</body>
+</html>
