@@ -22,7 +22,9 @@
     "express-session": "^1.17.3",
     "sqlite3": "^5.1.6",
     "connect-sqlite3": "^0.9.13",
-    "crypto": "^1.0.1"
+    "crypto": "^1.0.1",
+    "smtp-server": "^3.13.0",
+    "mailparser": "^3.6.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
